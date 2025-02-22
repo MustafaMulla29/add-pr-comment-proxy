@@ -81,6 +81,12 @@ jobs:
           diff=$(echo "$pr_size - $base_size" | bc -l)
           echo "diff=$diff" >> $GITHUB_OUTPUT
 
+      - name: Debug Outputs
+        run: |
+          echo "Base Bundle Size: ${{ steps.base-bundle-size.outputs.base }}"
+          echo "PR Bundle Size: ${{ steps.pr-bundle-size.outputs.pr }}"
+          echo "Base Install Size: ${{ steps.base-install-size.outputs.base }}"
+          echo "PR Install Size: ${{ steps.pr-install-size.outputs.pr }}"
       - name: Conditionally Update PR Comment
         if: |
           steps.bundle-size-diff.outputs.diff != '' &&
