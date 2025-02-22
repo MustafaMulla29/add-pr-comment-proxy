@@ -36,12 +36,12 @@ jobs:
       - name: Get base bundle size
         id: base-bundle-size
         run: |
-          echo "base=$(du -sk dist | cut -f1)" >> $GITHUB_ENV
+          echo "base=$(du -sk dist | cut -f1)" >> $GITHUB_OUTPUT
 
       - name: Get base install size
         id: base-install-size
         run: |
-          echo "base=$(bunx howfat -r simple . | grep 'Size:' | awk '{print $2}' | sed 's/K//')" >> $GITHUB_ENV
+          echo "base=$(bunx howfat -r simple . | grep 'Size:' | awk '{print $2}' | sed 's/K//')" >> $GITHUB_OUTPUT
 
       - name: Checkout PR branch
         uses: actions/checkout@v3
@@ -55,73 +55,62 @@ jobs:
       - name: Get PR bundle size
         id: pr-bundle-size
         run: |
-          echo "pr=$(du -sk dist | cut -f1)" >> $GITHUB_ENV
+          echo "pr=$(du -sk dist | cut -f1)" >> $GITHUB_OUTPUT
 
       - name: Get PR install size and full howfat output
         id: pr-install-size
         run: |
-          echo "pr=$(bunx howfat -r simple . | grep 'Size:' | awk '{print $2}' | sed 's/K//')" >> $GITHUB_ENV
-          echo "full_output<<EOF" >> $GITHUB_ENV
-          bunx howfat -r table . >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "pr=$(bunx howfat -r simple . | grep 'Size:' | awk '{print $2}' | sed 's/K//')" >> $GITHUB_OUTPUT
+          echo "full_output<<EOF" >> $GITHUB_OUTPUT
+          bunx howfat -r table . >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Calculate bundle size difference
         id: bundle-size-diff
         run: |
-          base_size=${{ env.base-bundle-size }}
-          pr_size=${{ env.pr-bundle-size }}
+          base_size=${{ steps.base-bundle-size.outputs.base }}
+          pr_size=${{ steps.pr-bundle-size.outputs.pr }}
           diff=$((pr_size - base_size))
-          echo "diff=$diff" >> $GITHUB_ENV
+          echo "diff=$diff" >> $GITHUB_OUTPUT
 
       - name: Calculate install size difference
         id: install-size-diff
         run: |
-          base_size=${{ env.base-install-size }}
-          pr_size=${{ env.pr-install-size }}
+          base_size=${{ steps.base-install-size.outputs.base }}
+          pr_size=${{ steps.pr-install-size.outputs.pr }}
           diff=$(echo "$pr_size - $base_size" | bc)
-          echo "diff=$diff" >> $GITHUB_ENV
+          echo "diff=$diff" >> $GITHUB_OUTPUT
 
-      - name: Find Existing Comment
-        id: find-comment
-        run: |
-          comment_id=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments --jq '.[] | select(.user.login == "github-actions[bot]") | .id' | head -n 1)
-          echo "COMMENT_ID=$comment_id" >> $GITHUB_ENV
-        env:
-          GH_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
-
-      - name: Post or Update PR Comment
+      - name: Conditionally Update PR Comment
         if: |
-          env.bundle-size-diff | tonumber >= 10
-          or env.bundle-size-diff | tonumber <= -10
-          or env.install-size-diff | tonumber >= 10
-          or env.install-size-diff | tonumber <= -10
-        run: |
-          COMMENT_BODY="## Size Report
-          ### Bundle Size
-          - Base branch size: ${{ env.base-bundle-size }} KB
-          - PR branch size: ${{ env.pr-bundle-size }} KB
-          - Difference: ${{ env.bundle-size-diff }} KB
-
-          ### Install Size
-          - Base branch size: ${{ env.base-install-size }} KB
-          - PR branch size: ${{ env.pr-install-size }} KB
-          - Difference: ${{ env.install-size-diff }} KB
-
-          ### Full Howfat Output (PR Branch)
-          \`\`\`
-          ${{ env.pr-install-size.full_output }}
-
-          (aside)
-          \`\`\`
-          "
-
-          if [[ -z "$COMMENT_ID" ]]; then
-            gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
-              -f body="$COMMENT_BODY"
-          else
-            gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID \
-              --method PATCH \
-              -f body="$COMMENT_BODY"
-          fi
+          steps.bundle-size-diff.outputs.diff != '' &&
+          steps.install-size-diff.outputs.diff != '' &&
+          (
+            fromJson(steps.bundle-size-diff.outputs.diff) >= 10 ||
+            fromJson(steps.bundle-size-diff.outputs.diff) <= -10 ||
+            fromJson(steps.install-size-diff.outputs.diff) >= 10 ||
+            fromJson(steps.install-size-diff.outputs.diff) <= -10
+          )
+        uses: mshick/add-pr-comment@v2
         env:
-          GH_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
+        with:
+          header: Size Report
+          message-id: size-report-${{ github.event.pull_request.number }}
+          message: |
+            ## Size Report
+            ### Bundle Size
+            - Base branch size: ${{ steps.base-bundle-size.outputs.base }} KB
+            - PR branch size: ${{ steps.pr-bundle-size.outputs.pr }} KB
+            - Difference: ${{ steps.bundle-size-diff.outputs.diff }} KB
+
+            ### Install Size
+            - Base branch size: ${{ steps.base-install-size.outputs.base }} KB
+            - PR branch size: ${{ steps.pr-install-size.outputs.pr }} KB
+            - Difference: ${{ steps.install-size-diff.outputs.diff }} KB
+
+            ### Full Howfat Output (PR Branch)
+            ```
+            ${{ steps.pr-install-size.outputs.full_output }}
+            ```
+          allow-repeats: false
