@@ -80,7 +80,7 @@ jobs:
           pr_size=$(echo "${{ steps.pr-install-size.outputs.pr }}" | sed 's/[^0-9.]//g')
           diff=$(echo "$pr_size - $base_size" | bc)
           echo "diff=$diff" >> $GITHUB_OUTPUT
-          
+
       - name: Conditionally Update PR Comment
         if: > 
           ((fromJson(steps.bundle-size-diff.outputs.diff || '0') >= 10) || 
@@ -89,11 +89,9 @@ jobs:
           (fromJson(steps.install-size-diff.outputs.diff || '0') <= -10))
         uses: mshick/add-pr-comment@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repository: ${{ github.repository }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
+          message: |
             ## Size Report
             ### Bundle Size
             - Base branch size: ${{ steps.base-bundle-size.outputs.base }} KB
@@ -108,7 +106,6 @@ jobs:
             ### Full Howfat Output (PR Branch)
             ```
             ${{ steps.pr-install-size.outputs.full_output }}
-
-            (aside)
             ```
-          edit-mode: replace
+          message-id: size-report
+          refresh-message-position: true
