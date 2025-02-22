@@ -82,19 +82,16 @@ jobs:
           echo "diff=$diff" >> $GITHUB_OUTPUT
 
       - name: Conditionally Update PR Comment
-        if: > 
-          ((fromJson(steps.bundle-size-diff.outputs.diff || '0') >= 10) || 
-          (fromJson(steps.bundle-size-diff.outputs.diff || '0') <= -10) || 
-          (fromJson(steps.install-size-diff.outputs.diff || '0') >= 10) || 
-          (fromJson(steps.install-size-diff.outputs.diff || '0') <= -10))
+        if: |
+          (steps.bundle-size-diff.outputs.diff >= 10 || steps.bundle-size-diff.outputs.diff <= -10) ||
+          (steps.install-size-diff.outputs.diff >= 10 || steps.install-size-diff.outputs.diff <= -10)
         uses: mshick/add-pr-comment@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
         with:
-          message-id: size-report-${{ github.event.pull_request.number }} 
-          edit-mode: replace  
-          allow-repeats: false
-          refresh-message-position: true 
+          message-id: size-report-${{ github.event.pull_request.number }}
+          edit-mode: replace
+          refresh-message-position: true
           message: |
             ## Size Report
             ### Bundle Size
