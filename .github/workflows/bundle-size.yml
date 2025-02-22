@@ -86,10 +86,10 @@ jobs:
           steps.bundle-size-diff.outputs.diff != '' &&
           steps.install-size-diff.outputs.diff != '' &&
           (
-            (fromJson(steps.bundle-size-diff.outputs.diff | toJson)) >= 10 ||
-            (fromJson(steps.bundle-size-diff.outputs.diff | toJson)) <= -10 ||
-            (fromJson(steps.install-size-diff.outputs.diff | toJson)) >= 10 ||
-            (fromJson(steps.install-size-diff.outputs.diff | toJson)) <= -10
+            fromJson(steps.bundle-size-diff.outputs.diff) >= 10 ||
+            fromJson(steps.bundle-size-diff.outputs.diff) <= -10 ||
+            fromJson(steps.install-size-diff.outputs.diff) >= 10 ||
+            fromJson(steps.install-size-diff.outputs.diff) <= -10
           )
         uses: mshick/add-pr-comment@v2
         env:
