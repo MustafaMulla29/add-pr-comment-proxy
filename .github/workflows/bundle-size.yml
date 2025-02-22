@@ -92,7 +92,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           message: |
-            ## Size Report
+            ## Size Report (Updated Test)
             ### Bundle Size
             - Base branch size: ${{ steps.base-bundle-size.outputs.base }} KB
             - PR branch size: ${{ steps.pr-bundle-size.outputs.pr }} KB
