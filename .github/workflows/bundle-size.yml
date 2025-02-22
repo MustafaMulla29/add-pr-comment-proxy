@@ -1,11 +1,11 @@
-      - name: Post PR Comment (Debug)
-        uses: mshick/add-pr-comment@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
-        with:
-          repository: ${{ github.repository }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## Debugging Size Report
-            This is a test comment to check if commenting works.
-          edit-mode: replace
+- name: Post PR Comment (Debug)
+  uses: mshick/add-pr-comment@v2
+  env:
+    GITHUB_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
+  with:
+    repository: ${{ github.repository }}
+    issue-number: ${{ github.event.pull_request.number }}
+    body: |
+      ## Debugging Size Report
+      This is a test comment to check if commenting works.
+      edit-mode: replace
