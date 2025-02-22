@@ -19,6 +19,7 @@
   "homepage": "https://github.com/tscircuit/add-pr-comment-proxy#readme",
   "dependencies": {
     "@actions/http-client": "^1.0.8",
+    "bcryptjs": "^3.0.2",
     "date-fns": "^4.1.0",
     "lodash": "^4.17.21",
     "next": "^12.3.4",
