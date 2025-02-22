@@ -83,10 +83,10 @@ jobs:
 
       - name: Conditionally Update PR Comment
         if: |
-          fromJSON(steps.bundle-size-diff.outputs.diff) >= 10 ||
-          fromJSON(steps.bundle-size-diff.outputs.diff) <= -10 ||
-          fromJSON(steps.install-size-diff.outputs.diff) >= 10 ||
-          fromJSON(steps.install-size-diff.outputs.diff) <= -10
+          fromJson(steps.bundle-size-diff.outputs.diff) >= 10 ||
+          fromJson(steps.bundle-size-diff.outputs.diff) <= -10 ||
+          fromJson(steps.install-size-diff.outputs.diff) >= 10 ||
+          fromJson(steps.install-size-diff.outputs.diff) <= -10
         uses: mshick/add-pr-comment@v2
         env:
           GITHUB_TOKEN: ${{ secrets.TSCIRCUIT_BOT_GITHUB_TOKEN }}
@@ -108,8 +108,6 @@ jobs:
             ### Full Howfat Output (PR Branch)
             ```
             ${{ steps.pr-install-size.outputs.full_output }}
-
-            (aside)
             ```
-          proxy-url: https://add-pr-comment-proxy-tscircuit.vercel.app/api
+          # proxy-url: https://add-pr-comment-proxy-tscircuit.vercel.app/api
           allow-repeats: false
