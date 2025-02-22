@@ -83,15 +83,16 @@ jobs:
 
       - name: Conditionally Update PR Comment
         if: > 
-          ((fromJson(steps.bundle-size-diff.outputs.diff || '0') >= 10) || 
-          (fromJson(steps.bundle-size-diff.outputs.diff || '0') <= -10) || 
-          (fromJson(steps.install-size-diff.outputs.diff || '0') >= 10) || 
-          (fromJson(steps.install-size-diff.outputs.diff || '0') <= -10))
+          ((steps.bundle-size-diff.outputs.diff != '') && 
+          ((steps.bundle-size-diff.outputs.diff | int) >= 10 || 
+          (steps.bundle-size-diff.outputs.diff | int) <= -10 || 
+          (steps.install-size-diff.outputs.diff | int) >= 10 || 
+          (steps.install-size-diff.outputs.diff | int) <= -10))
         uses: mshick/add-pr-comment@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          message-id: size-report 
+          message-id: size-report-${{ github.event.pull_request.number }} 
           edit-mode: replace  
           refresh-message-position: true
           message: |
