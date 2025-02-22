@@ -78,7 +78,7 @@ jobs:
         run: |
           base_size=$(echo "${{ steps.base-install-size.outputs.base }}" | sed 's/[^0-9.]//g')
           pr_size=$(echo "${{ steps.pr-install-size.outputs.pr }}" | sed 's/[^0-9.]//g')
-          diff=$(echo "$pr_size - $base_size" | bc)
+          diff=$(echo "$pr_size - $base_size" | bc -l)
           echo "diff=$diff" >> $GITHUB_OUTPUT
 
       - name: Conditionally Update PR Comment
@@ -104,9 +104,9 @@ jobs:
             - Difference: ${{ steps.bundle-size-diff.outputs.diff }} KB
 
             ### Install Size
-            - Base branch size: ${{ steps.base-install-size.outputs.base }} KB
-            - PR branch size: ${{ steps.pr-install-size.outputs.pr }} KB
-            - Difference: ${{ steps.install-size-diff.outputs.diff }} KB
+            - Base branch size: ${{ steps.base-install-size.outputs.base }} MB
+            - PR branch size: ${{ steps.pr-install-size.outputs.pr }} MB
+            - Difference: ${{ steps.install-size-diff.outputs.diff }} MB
 
             ### Full Howfat Output (PR Branch)
             ```
